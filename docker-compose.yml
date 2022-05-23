@@ -1,6 +1,34 @@
-version: "3.7"
+# Use root/example as user/password credentials
+version: '3.1'
+
 services:
-    client:
+
+ mongo:
+    image: mongo
+    restart: always
+    volumes:
+        - ./mongodb_data:/data/db
+    networks:
+        - my-react-app
+    environment:
+        MONGO_INITDB_ROOT_USERNAME: root
+        MONGO_INITDB_ROOT_PASSWORD: example
+
+ mongo-express:
+        image: mongo-express
+        restart: always
+        ports:
+            - 8081:8081
+        depends_on:
+            - mongo
+        networks:
+            - my-react-app
+        environment:
+            ME_CONFIG_MONGODB_ADMINUSERNAME: root
+            ME_CONFIG_MONGODB_ADMINPASSWORD: example
+            ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+
+ client:
         #image: mhart/alpine-node:6.8.0
         build: ./client
         restart: always
@@ -16,7 +44,7 @@ services:
             - CI=true
         networks:
             - my-react-app
-    api:
+ api:
         #image: yourdockHub/tagname
         build:
             context: ./api/
@@ -33,38 +61,11 @@ services:
             - CHOKIDAR_USEPOLLING=true
             - CI=true
         depends_on:
-            - mongodb
+            - mongo
         networks:
             - my-react-app
-    # mongodb just a service name,you can customize        
-    mongodb:
-        image: mongo
-        restart: always
-        #container_name: mongodb
-        volumes:
-            - ./mongodb_data:/data/db
-        ports:
-            - 27017:27017
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: root
-            MONGO_INITDB_ROOT_PASSWORD: example
-        networks:
-            - my-react-app
-
-    mongo-express:
-        image: mongo-express:latest
-        restart: always
-        ports:
-          - 8081:8081
-        depends_on:
-          - mongodb
-        networks:
-          - my-react-app
-        environment:
-            ME_CONFIG_MONGODB_ADMINUSERNAME: root
-            ME_CONFIG_MONGODB_ADMINPASSWORD: example
-            ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
            
+
 
 networks:
     my-react-app:
