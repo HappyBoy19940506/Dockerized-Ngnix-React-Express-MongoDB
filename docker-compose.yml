@@ -1,0 +1,57 @@
+version: "3.7"
+services:
+    client:
+        #image: mhart/alpine-node:6.8.0
+        build: ./client
+        restart: always
+        ports:
+            - "3000:3000"
+        working_dir: /client
+        volumes:
+            - ./client:/client
+            - /client/node_modules
+        environment:
+            - NODE_ENV=development
+            - CHOKIDAR_USEPOLLING=true
+            - CI=true
+        networks:
+            - my-react-app
+    api:
+        #image: yourdockHub/tagname
+        build:
+            context: ./api/
+            dockerfile: api.Dockerfile
+        restart: always
+        ports:
+            - "9000:9000"
+        # ExpressJS default port
+        volumes:
+            - ./api:/api
+            - /api/node_modules
+        environment:
+            - NODE_ENV=development
+            - CHOKIDAR_USEPOLLING=true
+            - CI=true
+        depends_on:
+            - mongodb
+        networks:
+            - my-react-app
+    # mongodb just a service name,you can customize        
+    mongodb:
+        image: mongo
+        restart: always
+        #container_name: mongodb
+        volumes:
+            - ./mongodb_data:/data/db
+        ports:
+            - 27017:27017
+        environment:
+            MONGO_INITDB_DATABASE: my-database-name
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: password
+        networks:
+            - my-react-app
+networks:
+    my-react-app:
+        driver: bridge
+        #default is bridge mode
