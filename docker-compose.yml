@@ -51,6 +51,18 @@ services:
             MONGO_INITDB_ROOT_PASSWORD: password
         networks:
             - my-react-app
+    adminer:
+        image: adminer:latest
+        restart: always
+        ports:
+            - 8080:8080
+        depends_on:
+            - mongodb
+        environment:
+            ADMINER_DEFAULT_SERVER: mongodb
+        networks:
+            - my-react-app
+
 networks:
     my-react-app:
         driver: bridge
